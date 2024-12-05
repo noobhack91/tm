@@ -13,7 +13,7 @@ export default (sequelize) => {
       allowNull: false
     },
     authorityType: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM('UPSMC', 'UKSMC', 'SGPGIMS'),
       allowNull: false
     },
     poDate: {
@@ -36,9 +36,27 @@ export default (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false
     },
+    remarks: {
+      type: DataTypes.TEXT
+    },
+    hasAccessories: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    accessories: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: []
+    },
     status: {
-      type: DataTypes.ENUM('Pending', 'Partially Completed', 'Completed', 'Closed'),
-      defaultValue: 'Pending'
+      type: DataTypes.ENUM(
+        'Draft',
+        'Submitted',
+        'In Progress',
+        'Partially Completed',
+        'Completed',
+        'Closed'
+      ),
+      defaultValue: 'Draft'
     },
     accessoriesPending: {
       type: DataTypes.BOOLEAN,
@@ -51,6 +69,13 @@ export default (sequelize) => {
     invoicePending: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
+    },
+    createdBy: {
+      type: DataTypes.UUID,
+      references: {
+        model: 'users',
+        key: 'id'
+      }
     }
   }, {
     tableName: 'tenders',

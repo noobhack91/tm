@@ -130,3 +130,54 @@ export const getTenderById = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+// server/controllers/tenderController.js
+
+export const createTender = async (req, res) => {
+  try {
+    const {
+      tender_number,
+      authority_type,
+      po_date,
+      contract_date,
+      equipment_name,
+      lead_time_to_deliver,
+      lead_time_to_install,
+      remarks,
+      has_accessories,
+      accessories,
+      locations
+    } = req.body;
+
+    const tender = await Tender.create({
+      tenderNumber: tender_number,
+      authorityType: authority_type,
+      poDate: po_date,
+      contractDate: contract_date,
+      equipmentName: equipment_name,
+      leadTimeToDeliver: lead_time_to_deliver,
+      leadTimeToInstall: lead_time_to_install,
+      remarks,
+      hasAccessories: has_accessories,
+      accessories,
+      status: 'Draft',
+      createdBy: req.user.id
+    });
+
+    if (locations?.length > 0) {
+      await Consignee.bulkCreate(
+        locations.map((loc, index) => ({
+          tenderId: tender.id,
+          srNo: (index + 1).toString(),
+          districtName: loc.districtName,
+          blockName: loc.blockName,
+          facilityName: loc.facilityName,
+          consignmentStatus: 'Processing'
+        }))
+      );
+    }
+
+    res.status(201).json(tender);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};

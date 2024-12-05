@@ -1,77 +1,77 @@
-import { parse } from 'csv-parse/sync';
 import logger from '../config/logger.js';
-import { sequelize, EquipmentInstallation, EquipmentLocation, User } from '../models/index.js';
+import { Consignee, sequelize, Tender } from '../models/index.js';
 import { validateInstallationRequest } from '../validators/installation.validator.js';
+import { parse } from 'csv-parse/sync';
 
 export const createInstallationRequest = async (req, res) => {
   const transaction = await sequelize.transaction();
 
   try {
-    // Validate the entire request body including locations
     const validatedData = validateInstallationRequest(req.body);
 
-    // Create installation request
-    const installation = await EquipmentInstallation.create({
+    // Create tender/installation request
+    const tender = await Tender.create({
       tenderNumber: validatedData.tender_number,
       authorityType: validatedData.authority_type,
       poDate: validatedData.po_contract_date,
-      equipment: validatedData.equipment,
+      contractDate: validatedData.po_contract_date,
+      equipmentName: validatedData.equipment,
       leadTimeToDeliver: validatedData.lead_time_to_deliver,
       leadTimeToInstall: validatedData.lead_time_to_install,
       remarks: validatedData.remarks,
       hasAccessories: validatedData.has_accessories,
       accessories: validatedData.selected_accessories,
-      createdBy: req.user.id,
-      status: 'Draft'
+      status: 'Draft',
+      createdBy: req.user.id
     }, { transaction });
 
-    // Create locations
+    // Create consignees/locations
     if (validatedData.locations?.length > 0) {
-      await EquipmentLocation.bulkCreate(
+      await Consignee.bulkCreate(
         validatedData.locations.map((loc, index) => ({
-          installationId: installation.id,
+          tenderId: tender.id,
           srNo: (index + 1).toString(),
           districtName: loc.districtName,
           blockName: loc.blockName,
           facilityName: loc.facilityName,
-          status: 'Pending'
+          consignmentStatus: 'Processing'
         })),
         { transaction }
       );
     }
 
     await transaction.commit();
-    logger.info(`Installation request created: ${installation.id}`);
+    logger.info(`Tender/Installation request created: ${tender.id}`);
 
-    // Fetch complete installation with locations
-    const completeInstallation = await EquipmentInstallation.findByPk(installation.id, {
+    // Fetch complete tender with consignees
+    const completeTender = await Tender.findByPk(tender.id, {
       include: [{
-        model: EquipmentLocation,
-        as: 'locations'
+        model: Consignee,
+        as: 'consignees'
       }]
     });
 
-    res.status(201).json(completeInstallation);
+    res.status(201).json(completeTender);
   } catch (error) {
     await transaction.rollback();
-    logger.error('Error creating installation request:', error);
+    logger.error('Error creating tender/installation request:', error);
     res.status(400).json({ error: error.message });
   }
 };
 
 export const getInstallationRequests = async (req, res) => {
   try {
-    const installations = await EquipmentInstallation.findAll({
+    const tenders = await Tender.findAll({
       include: [{
-        model: EquipmentLocation,
-        as: 'locations'
+        model: Consignee,
+        as: 'consignees'
       }],
       order: [['createdAt', 'DESC']]
     });
 
-    res.json(installations);
+    res.json(tenders);
   } catch (error) {
-    logger.error('Error fetching installation requests:', error);
+    logger.error('Error fetching tenders:', error);
     res.status(500).json({ error: error.message });
   }
 };

@@ -1,68 +1,87 @@
 import { DataTypes } from 'sequelize';
-import sequelize from '../config/database.js';
-import Consignee from './Consignee.js';
 
-const Tender = sequelize.define('Tender', {
-  id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
-  },
-  tenderNumber: {
-    type: DataTypes.STRING,
-    unique: true,
-    allowNull: false
-  },
-  authorityType: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  poDate: {
-    type: DataTypes.DATE,
-    allowNull: false
-  },
-  contractDate: {
-    type: DataTypes.DATE,
-    allowNull: false
-  },
-  leadTimeToInstall: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
-  leadTimeToDeliver: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
-  equipmentName: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  status: {
-    type: DataTypes.ENUM('Pending', 'Partially Completed', 'Completed', 'Closed'),
-    defaultValue: 'Pending'
-  },
-  accessoriesPending: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false
-  },
-  installationPending: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
-  },
-  invoicePending: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: true
-  }
-}, {
-  tableName: 'tenders',
-  underscored: true,
-  timestamps: true
-});
+export default (sequelize) => {
+  const Tender = sequelize.define('Tender', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
+    },
+    tenderNumber: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: false
+    },
+    authorityType: {
+      type: DataTypes.ENUM('UPSMC', 'UKSMC', 'SGPGIMS'),
+      allowNull: false
+    },
+    poDate: {
+      type: DataTypes.DATE,
+      allowNull: false
+    },
+    contractDate: {
+      type: DataTypes.DATE,
+      allowNull: false
+    },
+    equipmentName: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    leadTimeToDeliver: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        min: 1
+      }
+    },
+    leadTimeToInstall: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        min: 1
+      }
+    },
+    remarks: {
+      type: DataTypes.TEXT
+    },
+    hasAccessories: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    accessories: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: []
+    },
+    status: {
+      type: DataTypes.ENUM('Draft', 'Submitted', 'In Progress', 'Partially Completed', 'Completed', 'Closed'),
+      defaultValue: 'Draft'
+    },
+    accessoriesPending: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    installationPending: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
+    invoicePending: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
+    createdBy: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: 'users',
+        key: 'id'
+      }
+    }
+  }, {
+    tableName: 'tenders',
+    underscored: true,
+    timestamps: true
+  });
 
-// Define associations
-Tender.hasMany(Consignee, {
-  foreignKey: 'tenderId',
-  as: 'consignees'
-});
-
-export default Tender;
+  return Tender;
+};
