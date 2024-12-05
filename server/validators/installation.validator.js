@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+const locationSchema = z.object({
+  districtName: z.string().min(1),
+  blockName: z.string().min(1),
+  facilityName: z.string().min(1)
+});
+
 const installationSchema = z.object({
   tender_number: z.string().min(1).max(100),
   authority_type: z.enum(['UPSMC', 'UKSMC', 'SGPGIMS']),
@@ -9,22 +15,10 @@ const installationSchema = z.object({
   lead_time_to_install: z.number().positive(),
   remarks: z.string().optional(),
   has_accessories: z.boolean(),
-  selected_accessories: z.array(z.string()).optional()
+  selected_accessories: z.array(z.string()).default([]),
+  locations: z.array(locationSchema)
 });
 
-const locationSchema = z.object({
-  sr_no: z.number().positive(),
-  district_name: z.string().min(1),
-  block_name: z.string().min(1),
-  facility_name: z.string().min(1)
-});
-
-export function validateInstallationRequest(formData, locations) {
-  const validatedForm = installationSchema.parse(formData);
-  const validatedLocations = z.array(locationSchema).parse(locations);
-  
-  return {
-    ...validatedForm,
-    locations: validatedLocations
-  };
+export function validateInstallationRequest(data) {
+  return installationSchema.parse(data);
 }

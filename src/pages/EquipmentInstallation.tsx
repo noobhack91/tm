@@ -22,6 +22,7 @@ export const EquipmentInstallation: React.FC = () => {
 
       const requestData = {
         ...formData,
+        po_contract_date: formData.po_contract_date.toISOString(),
         locations
       };
 

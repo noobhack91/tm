@@ -1,10 +1,26 @@
+import { Download, Upload } from 'lucide-react';
 import React, { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import Select from 'react-select';
-import { Upload, Download } from 'lucide-react';
+import { z } from 'zod';
+
+// Define validation schema matching backend
+const installationSchema = z.object({
+  tender_number: z.string().min(1).max(100),
+  authority_type: z.enum(['UPSMC', 'UKSMC', 'SGPGIMS']),
+  po_contract_date: z.date(),
+  equipment: z.string().min(1),
+  lead_time_to_deliver: z.number().positive(),
+  lead_time_to_install: z.number().positive(),
+  remarks: z.string().optional(),
+  has_accessories: z.boolean(),
+  selected_accessories: z.array(z.string()).optional()
+});
+
+type InstallationFormData = z.infer<typeof installationSchema>;
 
 interface EquipmentFormProps {
-  onSubmit: (data: any) => void;
+  onSubmit: (data: InstallationFormData) => void;
   onFileUpload: (file: File) => void;
   onDownloadTemplate: () => void;
 }
@@ -20,21 +36,43 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   onFileUpload,
   onDownloadTemplate
 }) => {
-  const [formData, setFormData] = useState({
-    tenderNumber: '',
-    authorityType: '',
-    poDate: null as Date | null,
+  const [formData, setFormData] = useState<Partial<InstallationFormData>>({
+    tender_number: '',
+    authority_type: 'UPSMC',
+    po_contract_date: null,
     equipment: '',
-    leadTimeToDeliver: '',
-    leadTimeToInstall: '',
+    lead_time_to_deliver: undefined,
+    lead_time_to_install: undefined,
     remarks: '',
-    hasAccessories: false,
-    accessories: [] as string[]
+    has_accessories: false,
+    selected_accessories: []
   });
+
+  const [errors, setErrors] = useState<Partial<Record<keyof InstallationFormData, string>>>({});
+
+  const validateForm = (): boolean => {
+    try {
+      installationSchema.parse(formData);
+      setErrors({});
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const newErrors: Partial<Record<keyof InstallationFormData, string>> = {};
+        error.errors.forEach((err) => {
+          const path = err.path[0] as keyof InstallationFormData;
+          newErrors[path] = err.message;
+        });
+        setErrors(newErrors);
+      }
+      return false;
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    if (validateForm()) {
+      onSubmit(formData as InstallationFormData);
+    }
   };
 
   const handleAccessoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,7 +80,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
     if (accessory) {
       setFormData(prev => ({
         ...prev,
-        accessories: [...prev.accessories, accessory]
+        selected_accessories: [...(prev.selected_accessories || []), accessory]
       }));
       e.target.value = '';
     }
@@ -51,7 +89,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   const removeAccessory = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      accessories: prev.accessories.filter((_, i) => i !== index)
+      selected_accessories: prev.selected_accessories?.filter((_, i) => i !== index)
     }));
   };
 
@@ -63,29 +101,43 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           <input
             type="text"
             required
-            value={formData.tenderNumber}
-            onChange={(e) => setFormData(prev => ({ ...prev, tenderNumber: e.target.value }))}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            value={formData.tender_number}
+            onChange={(e) => setFormData(prev => ({ ...prev, tender_number: e.target.value }))}
+            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              errors.tender_number ? 'border-red-500' : ''
+            }`}
           />
+          {errors.tender_number && (
+            <p className="mt-1 text-sm text-red-600">{errors.tender_number}</p>
+          )}
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700">Authority Type</label>
           <Select
             options={authorityOptions}
-            onChange={(option) => setFormData(prev => ({ ...prev, authorityType: option?.value || '' }))}
-            className="mt-1"
+            value={authorityOptions.find(opt => opt.value === formData.authority_type)}
+            onChange={(option) => setFormData(prev => ({ ...prev, authority_type: option?.value as 'UPSMC' | 'UKSMC' | 'SGPGIMS' }))}
+            className={errors.authority_type ? 'border-red-500' : ''}
           />
+          {errors.authority_type && (
+            <p className="mt-1 text-sm text-red-600">{errors.authority_type}</p>
+          )}
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700">PO Date</label>
           <DatePicker
-            selected={formData.poDate}
-            onChange={(date) => setFormData(prev => ({ ...prev, poDate: date }))}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            selected={formData.po_contract_date}
+            onChange={(date) => setFormData(prev => ({ ...prev, po_contract_date: date }))}
+            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              errors.po_contract_date ? 'border-red-500' : ''
+            }`}
             dateFormat="yyyy-MM-dd"
           />
+          {errors.po_contract_date && (
+            <p className="mt-1 text-sm text-red-600">{errors.po_contract_date}</p>
+          )}
         </div>
 
         <div>
@@ -95,8 +147,13 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             required
             value={formData.equipment}
             onChange={(e) => setFormData(prev => ({ ...prev, equipment: e.target.value }))}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              errors.equipment ? 'border-red-500' : ''
+            }`}
           />
+          {errors.equipment && (
+            <p className="mt-1 text-sm text-red-600">{errors.equipment}</p>
+          )}
         </div>
 
         <div>
@@ -105,10 +162,15 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             type="number"
             required
             min="1"
-            value={formData.leadTimeToDeliver}
-            onChange={(e) => setFormData(prev => ({ ...prev, leadTimeToDeliver: e.target.value }))}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            value={formData.lead_time_to_deliver || ''}
+            onChange={(e) => setFormData(prev => ({ ...prev, lead_time_to_deliver: parseInt(e.target.value) }))}
+            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              errors.lead_time_to_deliver ? 'border-red-500' : ''
+            }`}
           />
+          {errors.lead_time_to_deliver && (
+            <p className="mt-1 text-sm text-red-600">{errors.lead_time_to_deliver}</p>
+          )}
         </div>
 
         <div>
@@ -117,10 +179,15 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             type="number"
             required
             min="1"
-            value={formData.leadTimeToInstall}
-            onChange={(e) => setFormData(prev => ({ ...prev, leadTimeToInstall: e.target.value }))}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            value={formData.lead_time_to_install || ''}
+            onChange={(e) => setFormData(prev => ({ ...prev, lead_time_to_install: parseInt(e.target.value) }))}
+            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              errors.lead_time_to_install ? 'border-red-500' : ''
+            }`}
           />
+          {errors.lead_time_to_install && (
+            <p className="mt-1 text-sm text-red-600">{errors.lead_time_to_install}</p>
+          )}
         </div>
       </div>
 
@@ -139,8 +206,8 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           <input
             type="checkbox"
             id="hasAccessories"
-            checked={formData.hasAccessories}
-            onChange={(e) => setFormData(prev => ({ ...prev, hasAccessories: e.target.checked }))}
+            checked={formData.has_accessories}
+            onChange={(e) => setFormData(prev => ({ ...prev, has_accessories: e.target.checked }))}
             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
           <label htmlFor="hasAccessories" className="ml-2 text-sm text-gray-700">
@@ -148,7 +215,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           </label>
         </div>
 
-        {formData.hasAccessories && (
+        {formData.has_accessories && (
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700">Add Accessories</label>
             <div className="mt-1 flex space-x-2">
@@ -164,9 +231,9 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
-            {formData.accessories.length > 0 && (
+            {formData.selected_accessories && formData.selected_accessories.length > 0 && (
               <div className="mt-2 space-y-2">
-                {formData.accessories.map((accessory, index) => (
+                {formData.selected_accessories.map((accessory, index) => (
                   <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
                     <span>{accessory}</span>
                     <button

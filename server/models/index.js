@@ -2,6 +2,8 @@ import dotenv from 'dotenv';
 import { Sequelize } from 'sequelize';
 import defineChallanReceipt from './definitions/ChallanReceipt.js';
 import defineConsignee from './definitions/Consignee.js';
+import EquipmentInstallation from './definitions/EquipmentInstallation.js';
+import EquipmentLocation from './definitions/EquipmentLocation.js';
 import defineInstallationReport from './definitions/InstallationReport.js';
 import defineInvoice from './definitions/Invoice.js';
 import defineLogisticsDetails from './definitions/LogisticsDetails.js';
@@ -35,7 +37,8 @@ const LogisticsDetails = defineLogisticsDetails(sequelize);
 const ChallanReceipt = defineChallanReceipt(sequelize);
 const InstallationReport = defineInstallationReport(sequelize);
 const Invoice = defineInvoice(sequelize);
-
+const EquipmentInstallationModel = EquipmentInstallation.init(sequelize);
+const EquipmentLocationModel = EquipmentLocation.init(sequelize);
 // Define associations
 Tender.hasMany(Consignee, {
   foreignKey: 'tenderId',
@@ -82,7 +85,16 @@ Invoice.belongsTo(Consignee, {
   foreignKey: 'consigneeId'
 });
 
+EquipmentInstallation.hasMany(EquipmentLocation, {
+    foreignKey: 'installationId',
+    as: 'locations'
+  });
+  
+EquipmentLocation.belongsTo(EquipmentInstallation, {
+    foreignKey: 'installationId'
+  });
 export {
-  ChallanReceipt, Consignee, InstallationReport,
+  ChallanReceipt, Consignee, EquipmentInstallation, EquipmentLocation, InstallationReport,
   Invoice, LogisticsDetails, sequelize, Tender, User
 };
+

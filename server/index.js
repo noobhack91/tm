@@ -14,6 +14,7 @@ import authRoutes from './routes/authRoutes.js';
 import consigneeRoutes from './routes/consigneeRoutes.js';
 import tenderRoutes from './routes/tenderRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
+import equipmentInstallationRoutes from './routes/equipmentInstallationRoutes.js';
 
 dotenv.config();
 
@@ -48,7 +49,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tenders', authenticate, tenderRoutes);
 app.use('/api/consignees', authenticate, consigneeRoutes);
 app.use('/api/upload', authenticate, uploadRoutes);
-
+app.use('/api/equipment-installation', authenticate, equipmentInstallationRoutes);
 // Error handling middleware
 app.use(errorHandler);
 
