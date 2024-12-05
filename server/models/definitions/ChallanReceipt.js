@@ -1,0 +1,29 @@
+import { DataTypes } from 'sequelize';
+
+export default (sequelize) => {
+  const ChallanReceipt = sequelize.define('ChallanReceipt', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
+    },
+    consigneeId: {
+      type: DataTypes.UUID,
+      allowNull: false
+    },
+    date: {
+      type: DataTypes.DATE,
+      allowNull: false
+    },
+    filePath: {
+      type: DataTypes.STRING,
+      allowNull: false
+    }
+  }, {
+    tableName: 'challan_receipts',
+    underscored: true,
+    timestamps: true
+  });
+
+  return ChallanReceipt;
+};
