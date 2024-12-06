@@ -15,8 +15,11 @@ const installationSchema = z.object({
   lead_time_to_install: z.number().positive(),
   remarks: z.string().optional(),
   has_accessories: z.boolean(),
-  selected_accessories: z.array(z.string()).default([]),
-  locations: z.array(locationSchema)
+  // selected_accessories: z.array(z.string()).default([]),
+  locations: z.array(locationSchema),
+  selected_accessories: z.array(z.enum(['UPS', 'Stabilizer', 'Battery', 'Printer', 'Computer', 'Monitor', 'Cable', 'Software']))
+    .optional()
+    .nullable()
 });
 
 export function validateInstallationRequest(data) {

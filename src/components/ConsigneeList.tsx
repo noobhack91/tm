@@ -1,5 +1,5 @@
-import { ClipboardCheck, FileSpreadsheet, FileText, Truck } from 'lucide-react';
-import React from 'react';
+import { Check, ClipboardCheck, Edit, FileSpreadsheet, FileText, Truck } from 'lucide-react';
+import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { ConsigneeDetails } from '../types';
 
@@ -21,10 +21,12 @@ export const ConsigneeList: React.FC<ConsigneeListProps> = ({
   onUpdateSerialNumber,
 }) => {
   const { user } = useAuth();
+  const [editingSerialNumber, setEditingSerialNumber] = useState<string | null>(null);
+  const [tempSerialNumber, setTempSerialNumber] = useState<string>('');
 
   const canPerformAction = (actionType: string): boolean => {
     if (user?.role === 'admin') return true;
-    
+
     switch (actionType) {
       case 'logistics':
         return user?.role === 'logistics';
@@ -36,6 +38,32 @@ export const ConsigneeList: React.FC<ConsigneeListProps> = ({
         return user?.role === 'invoice';
       default:
         return false;
+    }
+  };
+
+  const getStatusColor = (status: string): string => {
+    const statusColors: Record<string, string> = {
+      'Processing': 'bg-gray-100 text-gray-800',
+      'Dispatched': 'bg-blue-100 text-blue-800',
+      'Installation Pending': 'bg-yellow-100 text-yellow-800',
+      'Installation Done': 'bg-green-100 text-green-800',
+      'Invoice Done': 'bg-purple-100 text-purple-800',
+      'Bill Submitted': 'bg-indigo-100 text-indigo-800',
+    };
+    return statusColors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  const handleEditSerialNumber = (id: string, serialNumber: string) => {
+    if (user?.role === 'admin') {
+      setEditingSerialNumber(id); // Enable editing for the selected row
+      setTempSerialNumber(serialNumber); // Set current serial number to temp for editing
+    }
+  };
+
+  const handleSaveSerialNumber = (id: string) => {
+    if (tempSerialNumber !== '') {
+      onUpdateSerialNumber(id, tempSerialNumber);
+      setEditingSerialNumber(null); // Exit editing mode
     }
   };
 
@@ -62,8 +90,9 @@ export const ConsigneeList: React.FC<ConsigneeListProps> = ({
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{consignee.blockName}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{consignee.facilityName}</td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                  ${getStatusColor(consignee.consignmentStatus)}`}>
+                <span
+                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(consignee.consignmentStatus)}`}
+                >
                   {consignee.consignmentStatus}
                 </span>
               </td>
@@ -77,17 +106,36 @@ export const ConsigneeList: React.FC<ConsigneeListProps> = ({
                 )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                {/* {(canPerformAction('logistics') || user?.role === 'admin') && ( */}
-                  <input
-                    type="text"
-                    value={consignee.serialNumber || ''}
-                    onChange={(e) => onUpdateSerialNumber(consignee.id, e.target.value)}
-                    className="border rounded px-2 py-1 text-sm"
-                    placeholder="Enter S/N"
-                  />
-                {/* )} */}
-                {!canPerformAction('logistics') && !user?.role === 'admin' && (
-                  <span className="text-sm text-gray-500">{consignee.serialNumber || '-'}</span>
+                {editingSerialNumber === consignee.id ? (
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value={tempSerialNumber}
+                      onChange={(e) => setTempSerialNumber(e.target.value)}
+                      className="border rounded px-2 py-1 text-sm"
+                      placeholder="Enter S/N"
+                    />
+                    <button
+                      onClick={() => handleSaveSerialNumber(consignee.id)}
+                      className="text-green-600"
+                      title="Save Serial Number"
+                    >
+                      <Check className="w-5 h-5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-500">{consignee.serialNumber || '-'}</span>
+                    {user?.role === 'admin' && (
+                      <button
+                        onClick={() => handleEditSerialNumber(consignee.id, consignee.serialNumber || '')}
+                        className="text-blue-600"
+                        title="Edit Serial Number"
+                      >
+                        <Edit className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
                 )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
@@ -134,16 +182,4 @@ export const ConsigneeList: React.FC<ConsigneeListProps> = ({
       </table>
     </div>
   );
-};
-
-const getStatusColor = (status: string): string => {
-  const colors = {
-    'Processing': 'bg-gray-100 text-gray-800',
-    'Dispatched': 'bg-blue-100 text-blue-800',
-    'Installation Pending': 'bg-yellow-100 text-yellow-800',
-    'Installation Done': 'bg-green-100 text-green-800',
-    'Invoice Done': 'bg-purple-100 text-purple-800',
-    'Bill Submitted': 'bg-indigo-100 text-indigo-800',
-  };
-  return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
 };

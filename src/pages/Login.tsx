@@ -1,18 +1,23 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../hooks/useAuth';
 import * as api from '../api';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth(); // Add isAuthenticated from useAuth
   const [formData, setFormData] = useState({
     username: '',
     password: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // If user is already authenticated, redirect to tenders page
+  if (isAuthenticated) {
+    return <Navigate to="/tenders" replace />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,12 +26,10 @@ export const Login: React.FC = () => {
 
     try {
       const response = await api.login(formData);
-      console.log('Login response:', response.data);
       login(response.data.token, response.data.user);
       toast.success('Login successful!');
       navigate('/tenders');
     } catch (error: any) {
-      console.error('Login error:', error);
       const message = error.response?.data?.error || 'Login failed. Please try again.';
       setError(message);
       toast.error(message);
@@ -46,7 +49,7 @@ export const Login: React.FC = () => {
             Please sign in to continue
           </p>
         </div>
-        
+
         {error && (
           <div className="rounded-md bg-red-50 p-4">
             <div className="flex">

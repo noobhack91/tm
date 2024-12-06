@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import Select from 'react-select';
 import { z } from 'zod';
+import { MultiValue } from 'react-select';
 
 // Define validation schema matching backend
 const installationSchema = z.object({
@@ -24,12 +25,38 @@ interface EquipmentFormProps {
   onFileUpload: (file: File) => void;
   onDownloadTemplate: () => void;
 }
+interface AccessoryOption {
+    value: string;
+    label: string;
+  }
+  const accessoryOptions: AccessoryOption[] = [
+      { value: 'UPS', label: 'UPS' },
+      { value: 'Stabilizer', label: 'Stabilizer' },
+      { value: 'Battery', label: 'Battery' },
+      { value: 'Printer', label: 'Printer' },
+      { value: 'Computer', label: 'Computer' },
+      { value: 'Monitor', label: 'Monitor' },
+      { value: 'Cable', label: 'Cable' },
+      { value: 'Software', label: 'Software' },
+      // Add more accessories as needed
+    ];  
 
 const authorityOptions = [
-  { value: 'UPSMC', label: 'UPSMC' },
-  { value: 'UKSMC', label: 'UKSMC' },
-  { value: 'SGPGIMS', label: 'SGPGIMS' }
+  { value: 'UPMSCL', label: 'UPMSCL' },
+  { value: 'AUTONOMOUS', label: 'AUTONOMOUS' },
+  { value: 'CMSD', label: 'CMSD' },
+  { value: 'DGME', label: 'DGME' },
+  { value: 'AIIMS', label: 'AIIMS' },
+  { value: 'SGPGI', label: 'SGPGI' },
+  { value: 'KGMU', label: 'KGMU' },
+  { value: 'BHU', label: 'BHU' },
+  { value: 'BMSICL', label: 'BMSICL' },
+  { value: 'OSMCL', label: 'OSMCL' },
+  { value: 'TRADE', label: 'TRADE' },
+  { value: 'GDMC', label: 'GDMC' },
+  { value: 'AMSCL', label: 'AMSCL' }
 ];
+
 
 export const EquipmentForm: React.FC<EquipmentFormProps> = ({
   onSubmit,
@@ -103,7 +130,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             required
             value={formData.tender_number}
             onChange={(e) => setFormData(prev => ({ ...prev, tender_number: e.target.value }))}
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+            className={`mt-1 block w-full rounded-md border border-black shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
               errors.tender_number ? 'border-red-500' : ''
             }`}
           />
@@ -113,13 +140,15 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Authority Type</label>
+          <label className="block  text-sm font-medium text-gray-700">Authority Type</label>
           <Select
+            defaultValue={authorityOptions.find(opt => opt.value === 'UPMSCL')}
             options={authorityOptions}
             value={authorityOptions.find(opt => opt.value === formData.authority_type)}
             onChange={(option) => setFormData(prev => ({ ...prev, authority_type: option?.value as 'UPSMC' | 'UKSMC' | 'SGPGIMS' }))}
-            className={errors.authority_type ? 'border-red-500' : ''}
-          />
+            className={`mt-1 block w-full rounded-md border border-black shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+              errors.authority_type ? 'border-red-500' : ''
+            }`}          />
           {errors.authority_type && (
             <p className="mt-1 text-sm text-red-600">{errors.authority_type}</p>
           )}
@@ -130,7 +159,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
           <DatePicker
             selected={formData.po_contract_date}
             onChange={(date) => setFormData(prev => ({ ...prev, po_contract_date: date }))}
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+            className={`mt-1 block w-full rounded-md border border-black shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
               errors.po_contract_date ? 'border-red-500' : ''
             }`}
             dateFormat="yyyy-MM-dd"
@@ -147,7 +176,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             required
             value={formData.equipment}
             onChange={(e) => setFormData(prev => ({ ...prev, equipment: e.target.value }))}
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+            className={`mt-1 block w-full rounded-md border border-black shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
               errors.equipment ? 'border-red-500' : ''
             }`}
           />
@@ -164,7 +193,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             min="1"
             value={formData.lead_time_to_deliver || ''}
             onChange={(e) => setFormData(prev => ({ ...prev, lead_time_to_deliver: parseInt(e.target.value) }))}
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+            className={`mt-1 block w-full rounded-md border border-black shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
               errors.lead_time_to_deliver ? 'border-red-500' : ''
             }`}
           />
@@ -181,7 +210,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             min="1"
             value={formData.lead_time_to_install || ''}
             onChange={(e) => setFormData(prev => ({ ...prev, lead_time_to_install: parseInt(e.target.value) }))}
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+            className={`mt-1 block w-full rounded-md border border-black shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
               errors.lead_time_to_install ? 'border-red-500' : ''
             }`}
           />
@@ -196,7 +225,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
         <textarea
           value={formData.remarks}
           onChange={(e) => setFormData(prev => ({ ...prev, remarks: e.target.value }))}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="mt-1 block w-full rounded-md border border-black shadow-sm focus:border-blue-500 focus:ring-blue-500"
           rows={3}
         />
       </div>
@@ -208,7 +237,7 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
             id="hasAccessories"
             checked={formData.has_accessories}
             onChange={(e) => setFormData(prev => ({ ...prev, has_accessories: e.target.checked }))}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            className="rounded border border-black text-blue-600 focus:ring-blue-500"
           />
           <label htmlFor="hasAccessories" className="ml-2 text-sm text-gray-700">
             Has Accessories
@@ -216,39 +245,30 @@ export const EquipmentForm: React.FC<EquipmentFormProps> = ({
         </div>
 
         {formData.has_accessories && (
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700">Add Accessories</label>
-            <div className="mt-1 flex space-x-2">
-              <input
-                type="text"
-                placeholder="Enter accessory name"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAccessoryChange(e as any);
-                  }
-                }}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-            {formData.selected_accessories && formData.selected_accessories.length > 0 && (
-              <div className="mt-2 space-y-2">
-                {formData.selected_accessories.map((accessory, index) => (
-                  <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                    <span>{accessory}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeAccessory(index)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+  <div className="mt-4">
+    <label className="block text-sm font-medium text-gray-700">Select Accessories</label>
+    <Select
+      isMulti
+      options={accessoryOptions}
+      value={formData.selected_accessories?.map(accessory => ({
+        value: accessory,
+        label: accessory
+      }))}
+      onChange={(selectedOptions: MultiValue<AccessoryOption>) => {
+        setFormData(prev => ({
+          ...prev,
+          selected_accessories: selectedOptions.map(option => option.value)
+        }));
+      }}
+      className="mt-1"
+      classNamePrefix="select"
+      placeholder="Select accessories..."
+    />
+    {errors.selected_accessories && (
+      <p className="mt-1 text-sm text-red-600">{errors.selected_accessories}</p>
+    )}
+  </div>
+)}
       </div>
 
       <div className="flex items-center justify-between">

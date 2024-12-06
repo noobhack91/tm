@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { Eye } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import DatePicker from 'react-datepicker';
-import Select from 'react-select';
 import ReactPaginate from 'react-paginate';
-import { Search, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import Select from 'react-select';
 import { toast } from 'react-toastify';
 import * as api from '../api';
-import { format } from 'date-fns';
 
 interface TenderListFilters {
   startDate: Date | null;
@@ -291,7 +291,7 @@ export const TenderList: React.FC = () => {
               previousClassName="px-3 py-2 rounded-md bg-white border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
               nextClassName="px-3 py-2 rounded-md bg-white border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
               pageClassName="px-3 py-2 rounded-md bg-white border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              activeClassName="bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+              activeClassName="bg-blue-600 text-black border-blue-600 hover:bg-blue-700"
               disabledClassName="opacity-50 cursor-not-allowed"
             />
           </div>
