@@ -159,6 +159,7 @@ export const createTender = async (req, res) => {
       remarks,
       hasAccessories: has_accessories,
       accessories,
+      accessoriesPending: has_accessories && accessories && accessories.length > 0,  
       status: 'Draft',
       createdBy: req.user.id
     });

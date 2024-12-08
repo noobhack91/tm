@@ -1,7 +1,17 @@
-import { Check, ClipboardCheck, Edit, FileSpreadsheet, FileText, Truck } from 'lucide-react';
+import { Check, ClipboardCheck, Edit, FileSpreadsheet, FileText, Truck,Package } from 'lucide-react';
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { ConsigneeDetails } from '../types';
+
+const Tooltip: React.FC<{ content: string[] }> = ({ content }) => (  
+    <div className="absolute z-10 bg-black text-white p-2 rounded shadow-lg text-sm -mt-20">  
+      <ul className="list-disc list-inside">  
+        {content.map((item, index) => (  
+          <li key={index}>{item}</li>  
+        ))}  
+      </ul>  
+    </div>  
+  ); 
 
 interface ConsigneeListProps {
   consignees: ConsigneeDetails[];
@@ -23,6 +33,7 @@ export const ConsigneeList: React.FC<ConsigneeListProps> = ({
   const { user } = useAuth();
   const [editingSerialNumber, setEditingSerialNumber] = useState<string | null>(null);
   const [tempSerialNumber, setTempSerialNumber] = useState<string>('');
+  const [hoveredConsignee, setHoveredConsignee] = useState<string | null>(null);  
 
   const canPerformAction = (actionType: string): boolean => {
     if (user?.role === 'admin') return true;
@@ -96,15 +107,28 @@ export const ConsigneeList: React.FC<ConsigneeListProps> = ({
                   {consignee.consignmentStatus}
                 </span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {consignee.accessoriesPending.status ? (
-                  <span className="text-red-600 cursor-pointer" title={consignee.accessoriesPending.items?.join(', ')}>
-                    Yes ({consignee.accessoriesPending.count})
-                  </span>
-                ) : (
-                  <span className="text-green-600">No</span>
-                )}
-              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">  
+                {consignee.accessoriesPending.status ? (  
+                  <div   
+                    className="relative"  
+                    onMouseEnter={() => setHoveredConsignee(consignee.id)}  
+                    onMouseLeave={() => setHoveredConsignee(null)}  
+                  >  
+                    <div className="flex items-center text-blue-600 cursor-pointer">  
+                      <Package className="w-5 h-5 mr-1" />  
+                      <span>({consignee.accessoriesPending.count})</span>  
+                    </div>  
+                    {hoveredConsignee === consignee.id && (  
+                      <Tooltip content={consignee.accessoriesPending.items || []} />  
+                    )}  
+                  </div>  
+                ) : (  
+                  <span className="text-green-600 flex items-center">  
+                    <Check className="w-5 h-5 mr-1" />  
+                    No  
+                  </span>  
+                )}  
+              </td>  
               <td className="px-6 py-4 whitespace-nowrap">
                 {editingSerialNumber === consignee.id ? (
                   <div className="flex items-center space-x-2">

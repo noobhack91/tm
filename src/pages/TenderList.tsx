@@ -45,7 +45,17 @@ export const TenderList: React.FC = () => {
     installationPending: null,
     invoicePending: null
   });
-  
+
+  const Tooltip: React.FC<{ content: string[] }> = ({ content }) => (
+    <div className="absolute z-10 bg-black text-white p-2 rounded shadow-lg text-sm">
+      <ul className="list-disc list-inside">
+        {content.map((item, index) => (
+          <li key={index}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  );
+
   const [tenders, setTenders] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [blocks, setBlocks] = useState([]);
@@ -53,6 +63,7 @@ export const TenderList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const ITEMS_PER_PAGE = 50;
+  const [hoveredTender, setHoveredTender] = useState<string | null>(null);
 
   useEffect(() => {
     fetchInitialData();
@@ -68,7 +79,7 @@ export const TenderList: React.FC = () => {
         api.getDistricts(),
         api.getBlocks()
       ]);
-      
+
       setDistricts(districtsRes.data.map((d: string) => ({ value: d, label: d })));
       setBlocks(blocksRes.data.map((b: string) => ({ value: b, label: b })));
     } catch (error) {
@@ -84,7 +95,7 @@ export const TenderList: React.FC = () => {
         page: currentPage + 1,
         limit: ITEMS_PER_PAGE
       });
-      
+
       setTenders(response.data.tenders);
       setTotalPages(Math.ceil(response.data.total / ITEMS_PER_PAGE));
     } catch (error) {
@@ -106,7 +117,7 @@ export const TenderList: React.FC = () => {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Tender List</h1>
-        
+
         {/* Search Filters */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -255,12 +266,14 @@ export const TenderList: React.FC = () => {
                       {format(new Date(tender.poDate), 'dd/MM/yyyy')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        tender.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                        tender.status === 'Partially Completed' ? 'bg-yellow-100 text-yellow-800' :
-                        tender.status === 'Closed' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
+                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${tender.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                          tender.status === 'Partially Completed' ? 'bg-yellow-100 text-yellow-800' :
+                            tender.status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
+                              tender.status === 'Closed' ? 'bg-red-100 text-red-800' :
+                                tender.status === 'Draft' ? 'bg-gray-100 text-gray-600' :
+                                  tender.status === 'Submitted' ? 'bg-purple-100 text-purple-800' :
+                                    'bg-gray-100 text-gray-800'
+                        }`}>
                         {tender.status}
                       </span>
                     </td>

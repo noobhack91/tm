@@ -8,7 +8,24 @@ const locationSchema = z.object({
 
 const installationSchema = z.object({
   tender_number: z.string().min(1).max(100),
-  authority_type: z.enum(['UPSMC', 'UKSMC', 'SGPGIMS']),
+  authority_type: z.enum([
+    'UPSMC',
+    'UKSMC',
+    'SGPGIMS',
+    'UPMSCL',
+    'AMSCL',
+    'CMSD',
+    'DGME',
+    'AIIMS',
+    'SGPGI',
+    'KGMU',
+    'BHU',
+    'BMSICL',
+    'OSMCL',
+    'TRADE',
+    'GDMC',
+    'AUTONOMOUS'
+  ]),  
   po_contract_date: z.string().datetime(),
   equipment: z.string().min(1),
   lead_time_to_deliver: z.number().positive(),

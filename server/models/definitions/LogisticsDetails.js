@@ -26,7 +26,15 @@ export default (sequelize) => {
     documents: {
       type: DataTypes.ARRAY(DataTypes.STRING),
       defaultValue: []
-    }
+    },
+    createdBy: {  // Add this field  
+            type: DataTypes.UUID,  
+            allowNull: false,  
+            references: {  
+              model: 'users',  
+              key: 'id'  
+            }  
+          } 
   }, {
     tableName: 'logistics_details',
     underscored: true,

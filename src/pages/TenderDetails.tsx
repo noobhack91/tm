@@ -10,7 +10,15 @@ import { InstallationModal } from '../components/modals/InstallationModal';
 import { InvoiceModal } from '../components/modals/InvoiceModal';
 import * as api from '../api';
 import { TenderDetails as ITenderDetails, ConsigneeDetails } from '../types';
-
+const Tooltip: React.FC<{ content: string[] }> = ({ content }) => (  
+    <div className="absolute z-10 bg-black text-white p-2 rounded shadow-lg text-sm">  
+      <ul className="list-disc list-inside">  
+        {content.map((item, index) => (  
+          <li key={index}>{item}</li>  
+        ))}  
+      </ul>  
+    </div>  
+  );  
 export const TenderDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [tender, setTender] = useState<ITenderDetails | null>(null);
@@ -24,6 +32,7 @@ export const TenderDetails: React.FC = () => {
     invoice: false
   });
   const [loading, setLoading] = useState(true);
+  const [hoveredTender, setHoveredTender] = useState<string | null>(null);  
 
   useEffect(() => {
     fetchTenderDetails();

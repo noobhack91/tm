@@ -1,63 +1,75 @@
+import { parse } from 'csv-parse/sync';
 import logger from '../config/logger.js';
 import { Consignee, sequelize, Tender } from '../models/index.js';
 import { validateInstallationRequest } from '../validators/installation.validator.js';
-import { parse } from 'csv-parse/sync';
 
-export const createInstallationRequest = async (req, res) => {
-  const transaction = await sequelize.transaction();
-
-  try {
-    const validatedData = validateInstallationRequest(req.body);
-
-    // Create tender/installation request
-    const tender = await Tender.create({
-      tenderNumber: validatedData.tender_number,
-      authorityType: validatedData.authority_type,
-      poDate: validatedData.po_contract_date,
-      contractDate: validatedData.po_contract_date,
-      equipmentName: validatedData.equipment,
-      leadTimeToDeliver: validatedData.lead_time_to_deliver,
-      leadTimeToInstall: validatedData.lead_time_to_install,
-      remarks: validatedData.remarks,
-      hasAccessories: validatedData.has_accessories,
-      accessories: validatedData.selected_accessories,
-      status: 'Draft',
-      createdBy: req.user.id
-    }, { transaction });
-
-    // Create consignees/locations
-    if (validatedData.locations?.length > 0) {
-      await Consignee.bulkCreate(
-        validatedData.locations.map((loc, index) => ({
-          tenderId: tender.id,
-          srNo: (index + 1).toString(),
-          districtName: loc.districtName,
-          blockName: loc.blockName,
-          facilityName: loc.facilityName,
-          consignmentStatus: 'Processing'
-        })),
-        { transaction }
-      );
-    }
-
-    await transaction.commit();
-    logger.info(`Tender/Installation request created: ${tender.id}`);
-
-    // Fetch complete tender with consignees
-    const completeTender = await Tender.findByPk(tender.id, {
-      include: [{
-        model: Consignee,
-        as: 'consignees'
-      }]
-    });
-
-    res.status(201).json(completeTender);
-  } catch (error) {
-    await transaction.rollback();
-    logger.error('Error creating tender/installation request:', error);
-    res.status(400).json({ error: error.message });
-  }
-};
+export const createInstallationRequest = async (req, res) => {  
+    const transaction = await sequelize.transaction();  
+  
+    try {  
+      const validatedData = validateInstallationRequest(req.body);  
+  
+      // Create tender/installation request  
+      const tender = await Tender.create({  
+        tenderNumber: validatedData.tender_number,  
+        authorityType: validatedData.authority_type,  
+        poDate: validatedData.po_contract_date,  
+        contractDate: validatedData.po_contract_date,  
+        equipmentName: validatedData.equipment,  
+        leadTimeToDeliver: validatedData.lead_time_to_deliver,  
+        leadTimeToInstall: validatedData.lead_time_to_install,  
+        remarks: validatedData.remarks,  
+        hasAccessories: validatedData.has_accessories,  
+        accessories: validatedData.selected_accessories,  
+        // Set accessoriesPending based on whether there are selected accessories  
+        accessoriesPending: validatedData.has_accessories &&   
+                           validatedData.selected_accessories &&   
+                           validatedData.selected_accessories.length > 0,  
+        status: 'Draft',  
+        createdBy: req.user.id  
+      }, { transaction });  
+  
+      // Create consignees/locations with proper accessoriesPending  
+      if (validatedData.locations?.length > 0) {  
+        await Consignee.bulkCreate(  
+          validatedData.locations.map((loc, index) => ({  
+            tenderId: tender.id,  
+            srNo: (index + 1).toString(),  
+            districtName: loc.districtName,  
+            blockName: loc.blockName,  
+            facilityName: loc.facilityName,  
+            consignmentStatus: 'Processing',  
+            // Set accessoriesPending for each consignee  
+            accessoriesPending: {  
+              status: validatedData.has_accessories &&   
+                     validatedData.selected_accessories &&   
+                     validatedData.selected_accessories.length > 0,  
+              count: validatedData.selected_accessories?.length || 0,  
+              items: validatedData.selected_accessories || []  
+            }  
+          })),  
+          { transaction }  
+        );  
+      }  
+  
+      await transaction.commit();  
+      logger.info(`Tender/Installation request created: ${tender.id}`);  
+  
+      // Fetch complete tender with consignees  
+      const completeTender = await Tender.findByPk(tender.id, {  
+        include: [{  
+          model: Consignee,  
+          as: 'consignees'  
+        }]  
+      });  
+  
+      res.status(201).json(completeTender);  
+    } catch (error) {  
+      await transaction.rollback();  
+      logger.error('Error creating tender/installation request:', error);  
+      res.status(400).json({ error: error.message });  
+    }  
+  };  
 
 export const getInstallationRequests = async (req, res) => {
   try {

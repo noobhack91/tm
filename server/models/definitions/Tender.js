@@ -43,21 +43,25 @@ export default (sequelize) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },
-    accessories: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      defaultValue: []
-    },
-    status: {
-      type: DataTypes.ENUM(
-        'Draft',
-        'Submitted',
-        'In Progress',
-        'Partially Completed',
-        'Completed',
-        'Closed'
-      ),
-      defaultValue: 'Draft'
-    },
+    accessoriesPending: {  
+      type: DataTypes.BOOLEAN,  
+      defaultValue: false,  
+      get() {  
+      // Return true if there are accessories and they haven't been delivered/installed  
+      return this.getDataValue('hasAccessories') &&   
+      this.getDataValue('accessories')?.length > 0 &&   
+      this.getDataValue('status') !== 'Completed';  
+      }  
+      },
+      status: {  
+          type: DataTypes.ENUM(  
+            'Draft',  
+            'In Progress',   
+            'Partially Completed',  
+            'Completed'  
+          ),  
+          defaultValue: 'Draft'  
+        },
     accessoriesPending: {
       type: DataTypes.BOOLEAN,
       defaultValue: false

@@ -18,7 +18,15 @@ export default (sequelize) => {
     filePath: {
       type: DataTypes.STRING,
       allowNull: false
-    }
+    },
+    createdBy: {  // Add this field  
+            type: DataTypes.UUID,  
+            allowNull: false,  
+            references: {  
+              model: 'users',  
+              key: 'id'  
+            }  
+          } 
   }, {
     tableName: 'installation_reports',
     underscored: true,
