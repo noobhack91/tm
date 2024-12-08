@@ -24,10 +24,10 @@ export default (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false
     },
-    role: {
-      type: DataTypes.ENUM('admin', 'logistics', 'challan', 'installation', 'invoice'),
-      allowNull: false
-    },
+    roles: {  
+          type: DataTypes.ARRAY(DataTypes.STRING), // Store multiple roles  
+          defaultValue: ['user'] // Default role is 'user'  
+        }, 
     isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
@@ -37,6 +37,8 @@ export default (sequelize) => {
     underscored: true,
     timestamps: true
   });
-
+  User.prototype.comparePassword = async function(candidatePassword) {  
+      return bcrypt.compare(candidatePassword, this.password);  
+    };  
   return User;
 };

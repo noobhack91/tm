@@ -1,7 +1,7 @@
+import { LogOut, Package, Upload } from 'lucide-react';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, Package, Upload } from 'lucide-react';
 
 export const Navigation: React.FC = () => {
   const { user, logout } = useAuth();
@@ -49,7 +49,7 @@ export const Navigation: React.FC = () => {
 
           <div className="flex items-center">
             <span className="text-sm text-gray-700 mr-4">
-              {user?.username} ({user?.role})
+              {user?.username}
             </span>
             <button
               onClick={logout}

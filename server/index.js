@@ -10,12 +10,12 @@ import logger from './config/logger.js';
 import { authenticate } from './middleware/auth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { sequelize } from './models/index.js';
+import adminRoutes from './routes/adminRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import consigneeRoutes from './routes/consigneeRoutes.js';
+import equipmentInstallationRoutes from './routes/equipmentInstallationRoutes.js';
 import tenderRoutes from './routes/tenderRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
-import equipmentInstallationRoutes from './routes/equipmentInstallationRoutes.js';
-
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -50,6 +50,7 @@ app.use('/api/tenders', authenticate, tenderRoutes);
 app.use('/api/consignees', authenticate, consigneeRoutes);
 app.use('/api/upload', authenticate, uploadRoutes);
 app.use('/api/equipment-installation', authenticate, equipmentInstallationRoutes);
+app.use('/api/admin',authenticate, adminRoutes);  
 // Error handling middleware
 app.use(errorHandler);
 

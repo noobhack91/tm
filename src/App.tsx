@@ -9,6 +9,7 @@ import { Login } from './pages/Login';
 import { TenderDetails } from './pages/TenderDetails';
 import { TenderList } from './pages/TenderList';
 import { Unauthorized } from './pages/unauthorized';
+import { UserRoleAccess } from './pages/UserRoleAccess';
 
 function App() {
   return (
@@ -17,7 +18,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
-          
+
           <Route
             path="/"
             element={
@@ -29,7 +30,16 @@ function App() {
               </PrivateRoute>
             }
           />
-          
+
+          <Route
+            path="/admin/users"
+            element={
+              <PrivateRoute adminOnly>
+                <UserRoleAccess />
+              </PrivateRoute>
+            }
+          />
+
           <Route
             path="/tenders"
             element={
@@ -41,7 +51,7 @@ function App() {
               </PrivateRoute>
             }
           />
-          
+
           <Route
             path="/tenders/:id"
             element={
@@ -53,7 +63,7 @@ function App() {
               </PrivateRoute>
             }
           />
-          
+
           <Route
             path="/equipment-installation"
             element={
