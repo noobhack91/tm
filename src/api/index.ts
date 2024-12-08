@@ -102,4 +102,4 @@ export const downloadTemplate = () =>
 export const getAllUsers = () => api.get('/admin/users');
 
 export const updateUserRoles = (userId: string, roles: string[]) =>
-  api.put('/admin/update-roles', { userId, roles });
+  api.put('/admin/users/role', { userId, roles });

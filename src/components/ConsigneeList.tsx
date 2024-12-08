@@ -1,4 +1,4 @@
-import { Check, ClipboardCheck, Edit, FileSpreadsheet, FileText, Truck,Package } from 'lucide-react';
+import { Check, ClipboardCheck, Edit, FileSpreadsheet, FileText, Package, Truck } from 'lucide-react';
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { ConsigneeDetails } from '../types';
@@ -35,22 +35,23 @@ export const ConsigneeList: React.FC<ConsigneeListProps> = ({
   const [tempSerialNumber, setTempSerialNumber] = useState<string>('');
   const [hoveredConsignee, setHoveredConsignee] = useState<string | null>(null);  
 
-  const canPerformAction = (actionType: string): boolean => {
-    if (user?.role === 'admin') return true;
+const canPerformAction = (actionType: string): string | false => {
+  if (user?.roles?.includes('admin')) return 'true'; // Return 'admin' role if user is an admin
 
-    switch (actionType) {
-      case 'logistics':
-        return user?.role === 'logistics';
-      case 'challan':
-        return user?.role === 'challan';
-      case 'installation':
-        return user?.role === 'installation';
-      case 'invoice':
-        return user?.role === 'invoice';
-      default:
-        return false;
-    }
-  };
+  switch (actionType) {
+    case 'logistics':
+      return user?.roles?.includes('logistics') ? 'logistics' : false; // Return 'logistics' if user has the role
+    case 'challan':
+      return user?.roles?.includes('challan') ? 'challan' : false; // Return 'challan' if user has the role
+    case 'installation':
+      return user?.roles?.includes('installation') ? 'installation' : false; // Return 'installation' if user has the role
+    case 'invoice':
+      return user?.roles?.includes('invoice') ? 'invoice' : false; // Return 'invoice' if user has the role
+    default:
+      return false; // Return false for unknown action types
+  }
+};
+
 
   const getStatusColor = (status: string): string => {
     const statusColors: Record<string, string> = {
@@ -65,7 +66,7 @@ export const ConsigneeList: React.FC<ConsigneeListProps> = ({
   };
 
   const handleEditSerialNumber = (id: string, serialNumber: string) => {
-    if (user?.role === 'admin') {
+    if (user?.roles?.includes('admin')) {
       setEditingSerialNumber(id); // Enable editing for the selected row
       setTempSerialNumber(serialNumber); // Set current serial number to temp for editing
     }
@@ -150,7 +151,7 @@ export const ConsigneeList: React.FC<ConsigneeListProps> = ({
                 ) : (
                   <div className="flex items-center space-x-2">
                     <span className="text-sm text-gray-500">{consignee.serialNumber || '-'}</span>
-                    {user?.role === 'admin' && (
+                    {user?.roles?.includes('admin') && (
                       <button
                         onClick={() => handleEditSerialNumber(consignee.id, consignee.serialNumber || '')}
                         className="text-blue-600"

@@ -3,51 +3,50 @@ import jwt from 'jsonwebtoken';
 import logger from '../config/logger.js';
 import { User } from '../models/index.js';
 
-export const login = async (req, res) => {  
-  try {  
-    const { username, password } = req.body;  
+// server/controllers/authController.js  
+export const login = async (req, res) => {    
+  try {    
+    const { username, password } = req.body;    
 
-    logger.info(`Login attempt for username: ${username}`);  
+    logger.info(`Login attempt for username: ${username}`);    
 
-    // Find the user by username  
-    const user = await User.findOne({ where: { username } });  
-    if (!user || !user.isActive) {  
-      logger.warn(`Failed login attempt for username: ${username} - User not found or inactive`);  
-      return res.status(401).json({ error: 'Invalid credentials' });  
-    }  
+    // Find the user by username    
+    const user = await User.findOne({ where: { username } });    
+    if (!user || !user.isActive) {    
+      logger.warn(`Failed login attempt for username: ${username} - User not found or inactive`);    
+      return res.status(401).json({ error: 'Invalid credentials' });    
+    }    
 
-    console.log('Plain-text password:', password);  
-console.log('Hashed password from DB:', user.password);  
-    // Compare the provided password with the hashed password in the database  
-    const isMatch = await bcrypt.compare(password, user.password);  
-    if (!isMatch) {  
-      logger.warn(`Failed login attempt for username: ${username} - Password mismatch`);  
-      return res.status(401).json({ error: 'Invalid credentials' });  
-    }  
+    // Compare the provided password with the hashed password in the database    
+    const isMatch = await bcrypt.compare(password, user.password);    
+    if (!isMatch) {    
+      logger.warn(`Failed login attempt for username: ${username} - Password mismatch`);    
+      return res.status(401).json({ error: 'Invalid credentials' });    
+    }    
 
-    // Generate a JWT token  
-    const token = jwt.sign(  
-      { id: user.id, role: user.role },  
-      process.env.JWT_SECRET,  
-      { expiresIn: '24h' }  
-    );  
+    // Generate a JWT token    
+    const token = jwt.sign(    
+      { id: user.id, roles: user.roles }, // Include roles in the token payload    
+      process.env.JWT_SECRET,    
+      { expiresIn: '24h' }    
+    );    
 
-    logger.info(`Successful login for username: ${username}`);  
+    logger.info(`Successful login for username: ${username}`);    
 
-    res.json({  
-      token,  
-      user: {  
-        id: user.id,  
-        username: user.username,  
-        email: user.email,  
-        role: user.role  
-      }  
-    });  
-  } catch (error) {  
-    logger.error('Login error:', error);  
-    res.status(500).json({ error: 'Internal server error' });  
-  }  
-};   
+    res.json({    
+      token,    
+      user: {    
+        id: user.id,    
+        username: user.username,    
+        email: user.email,    
+        roles: user.roles // Ensure roles are included in the response    
+      }    
+    });    
+  } catch (error) {    
+    logger.error('Login error:', error);    
+    res.status(500).json({ error: 'Internal server error' });    
+  }    
+};     
 
 export const register = async (req, res) => {
   try {

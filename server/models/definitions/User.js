@@ -25,9 +25,9 @@ export default (sequelize) => {
       allowNull: false
     },
     roles: {  
-          type: DataTypes.ARRAY(DataTypes.STRING), // Store multiple roles  
-          defaultValue: ['user'] // Default role is 'user'  
-        }, 
+      type: DataTypes.ARRAY(DataTypes.STRING), // Store multiple roles  
+      defaultValue: ['user'] // Default role is 'user'  
+      }, 
     isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true

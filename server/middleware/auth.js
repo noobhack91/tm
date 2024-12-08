@@ -33,26 +33,31 @@ export const authenticate = async (req, res, next) => {
 
 // Middleware to authorize based on roles  
 export const authorize = (...roles) => {  
-  return (req, res, next) => {  
-    try {  
-      const userRole = req.user.role; // Single role (ENUM) from the User model  
-
-      if (!roles.includes(userRole)) {  
-        logger.warn(  
-          `Unauthorized access attempt by user ${req.user.id} with role ${userRole}. Allowed roles: ${roles.join(', ')}`  
-        );  
-        return res.status(403).json({  
-          error: 'You do not have permission to perform this action',  
-        });  
-      }  
-
-      next();  
-    } catch (error) {  
-      logger.error('Authorization error:', error);  
-      res.status(403).json({ error: 'Access denied' });  
-    }  
+    return (req, res, next) => {  
+      try {  
+        const userRoles = req.user.roles || []; // Array of roles (e.g., ['super_admin', 'admin'])  
+  
+        // Check if the user has at least one of the allowed roles  
+        const hasAccess = roles.some((role) => userRoles.includes(role));  
+  
+        if (!hasAccess) {  
+          logger.warn(  
+            `Unauthorized access attempt by user ${req.user.id} with roles [${userRoles.join(  
+              ', '  
+            )}]. Allowed roles: ${roles.join(', ')}`  
+          );  
+          return res.status(403).json({  
+            error: 'You do not have permission to perform this action',  
+          });  
+        }  
+  
+        next();  
+      } catch (error) {  
+        logger.error('Authorization error:', error);  
+        res.status(403).json({ error: 'Access denied' });  
+      }  
+    };  
   };  
-};  
 
 // Middleware to authorize based on multiple roles (array of roles)  
 export const authorizeRoles = (...allowedRoles) => {  

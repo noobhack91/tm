@@ -1,25 +1,28 @@
+// src/components/PrivateRoute.tsx  
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../context/AuthContext';
 
-interface PrivateRouteProps {
-  children: React.ReactNode;
-}
+interface PrivateRouteProps {    
+  children: React.ReactNode;    
+  adminOnly?: boolean;    
+}    
 
-export const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+export const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, adminOnly = false }) => {    
+  const { isAuthenticated, user } = useAuth();    
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  if (!isAuthenticated) {    
+    return <Navigate to="/login" replace />;    
+  }    
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+  // Check if the user has the required role    
+  const hasAccess = adminOnly    
+    ? user?.roles?.includes('super_admin') // Safely check roles    
+    : true;    
 
-  return <>{children}</>;
-};
+  if (!hasAccess) {    
+    return <Navigate to="/unauthorized" replace />;    
+  }    
+
+  return <>{children}</>;    
+};    

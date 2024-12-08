@@ -1,3 +1,4 @@
+// src/pages/UserRoleAccess.tsx  
 import React, { useEffect, useState } from 'react';  
 import { toast } from 'react-toastify';  
 import * as api from '../api';  
@@ -6,6 +7,7 @@ export const UserRoleAccess: React.FC = () => {
   const [users, setUsers] = useState([]);  
   const [selectedUser, setSelectedUser] = useState<any>(null);  
   const [showModal, setShowModal] = useState(false);  
+  const [newRole, setNewRole] = useState<string>('');  
 
   useEffect(() => {  
     fetchUsers();  
@@ -20,9 +22,14 @@ export const UserRoleAccess: React.FC = () => {
     }  
   };  
 
-  const handleUpdateRole = async (userId: string, role: string) => {  
+  const handleUpdateRole = async () => {  
+    if (!newRole) {  
+      toast.error('Please select a role');  
+      return;  
+    }  
+
     try {  
-      await api.updateUserRoles(userId, role);  
+      await api.updateUserRoles(selectedUser.id, [newRole]);  
       toast.success('User role updated successfully');  
       fetchUsers();  
       setShowModal(false);  
@@ -39,7 +46,7 @@ export const UserRoleAccess: React.FC = () => {
           <tr>  
             <th className="py-2 px-4">Username</th>  
             <th className="py-2 px-4">Email</th>  
-            <th className="py-2 px-4">Role</th>  
+            <th className="py-2 px-4">Roles</th>  
             <th className="py-2 px-4">Actions</th>  
           </tr>  
         </thead>  
@@ -48,11 +55,12 @@ export const UserRoleAccess: React.FC = () => {
             <tr key={user.id}>  
               <td className="py-2 px-4">{user.username}</td>  
               <td className="py-2 px-4">{user.email}</td>  
-              <td className="py-2 px-4">{user.role}</td>  
+              <td className="py-2 px-4">{user.roles.join(', ')}</td>  
               <td className="py-2 px-4">  
                 <button  
                   onClick={() => {  
                     setSelectedUser(user);  
+                    setNewRole(user.roles[0]); // Default to the first role  
                     setShowModal(true);  
                   }}  
                   className="bg-blue-500 text-white px-4 py-2 rounded"  
@@ -70,15 +78,15 @@ export const UserRoleAccess: React.FC = () => {
           <div className="bg-white rounded-lg shadow-lg p-6 w-96">  
             <h2 className="text-xl font-bold mb-4">Edit Role for {selectedUser.username}</h2>  
             <div className="space-y-4">  
-              {['admin', 'logistics', 'challan', 'installation', 'invoice'].map((role) => (  
+              {['super_admin', 'admin', 'logistics', 'challan', 'installation', 'invoice'].map((role) => (  
                 <div key={role} className="flex items-center">  
                   <input  
                     type="radio"  
                     id={role}  
                     name="role"  
                     value={role}  
-                    checked={selectedUser.role === role}  
-                    onChange={() => handleUpdateRole(selectedUser.id, role)}  
+                    checked={newRole === role}  
+                    onChange={() => setNewRole(role)}  
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"  
                   />  
                   <label htmlFor={role} className="ml-2 text-sm text-gray-700">  
@@ -95,7 +103,7 @@ export const UserRoleAccess: React.FC = () => {
                 Cancel  
               </button>  
               <button  
-                onClick={() => handleUpdateRole(selectedUser.id, selectedUser.role)}  
+                onClick={handleUpdateRole}  
                 className="bg-blue-500 text-white px-4 py-2 rounded"  
               >  
                 Save  

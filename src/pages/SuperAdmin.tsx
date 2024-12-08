@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
-import * as api from '../api';
+// src/pages/SuperAdmin.tsx  
+import React, { useEffect, useState } from 'react';  
+import { toast } from 'react-toastify';  
+import * as api from '../api';  
 
 export const SuperAdmin: React.FC = () => {  
   const [users, setUsers] = useState([]);  

@@ -5,7 +5,7 @@ interface User {
   id: string;
   username: string;
   email: string;
-  role: 'admin' | 'logistics' | 'challan' | 'installation' | 'invoice' | 'super_admin';
+  roles: 'admin' | 'logistics' | 'challan' | 'installation' | 'invoice' | 'super_admin';
 }
 
 export const useAuth = () => {

@@ -2,7 +2,7 @@ export interface User {
   id: string;
   username: string;
   email: string;
-  role: 'admin' | 'logistics' | 'challan' | 'installation' | 'invoice';
+  roles: string[]; // Change 'role' to 'roles' and make it an array of strings  
 }
 
 export interface TenderDetails {

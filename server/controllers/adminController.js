@@ -1,5 +1,5 @@
-import { User } from '../models/index.js';  
-import logger from '../config/logger.js';  
+import logger from '../config/logger.js';
+import { User } from '../models/index.js';
 
 export const updateUserRoles = async (req, res) => {  
   try {  
@@ -24,7 +24,7 @@ export const updateUserRoles = async (req, res) => {
 export const getAllUsers = async (req, res) => {  
   try {  
     const users = await User.findAll({  
-      attributes: ['id', 'username', 'email', 'role', 'isActive'],  
+      attributes: ['id', 'username', 'email', 'roles', 'isActive'],  
     });  
     res.json(users);  
   } catch (error) {  
@@ -42,7 +42,7 @@ export const updateUserRole = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });  
     }  
 
-    user.role = role;  
+    user.roles = role;  
     await user.save();  
 
     logger.info(`User ${userId} role updated to ${role}`);  

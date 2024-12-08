@@ -29,6 +29,14 @@ export const Navigation: React.FC = () => {
                 Tenders
               </Link>
               
+                <Link to="/admin/users" className={`px-3 py-2 rounded-md text-sm font-medium ${
+                  location.pathname === '/admin/users'
+                    ? 'text-blue-600'
+                    : 'text-gray-700 hover:text-blue-600'
+                }`}>  
+                  Manage Users  
+                </Link>  
+              
               {user?.role === 'admin' && (
                 <Link
                   to="/equipment-installation"
